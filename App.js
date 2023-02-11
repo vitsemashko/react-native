@@ -1,20 +1,47 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { useEffect } from "react";
+import { loadFonts } from "./shared/functions";
+import RegistrationScreen from "./Screens/RegistrationScreen/RegistrationScreen";
+import LoginScreen from "./Screens/LoginScreen/LoginScreen";
+import {
+	StyleSheet,
+	TouchableWithoutFeedback,
+	View,
+	Keyboard,
+	ImageBackground,
+} from "react-native";
 
 export default function App() {
+	useEffect(() => {
+		loadFonts();
+	}, []);
 	return (
-		<View style={styles.container}>
-			<Text>Open up App.js to start working on your app!</Text>
-			<StatusBar style="auto" />
-		</View>
+		<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+			<View style={styles.container}>
+				<ImageBackground
+					source={require("./assets/bg.png")}
+					resizeMode="cover"
+					style={{
+						width: 375,
+						height: 812,
+						filter: "drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25))",
+					}}
+				>
+					{/* <RegistrationScreen /> */}
+
+					<LoginScreen />
+				</ImageBackground>
+			</View>
+		</TouchableWithoutFeedback>
 	);
 }
 
 const styles = StyleSheet.create({
 	container: {
-		flex: 1,
-		backgroundColor: "#fff",
+		fontFamily: "Roboto",
+		display: "flex",
 		alignItems: "center",
 		justifyContent: "center",
+		paddingRight: 16,
+		paddingLeft: 16,
 	},
 });
