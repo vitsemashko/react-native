@@ -31,6 +31,7 @@ const LoginScreen = () => {
 		setEmail("");
 		setPassword("");
 	};
+	console.log(`Email:${email}/Password:${password}`);
 	return (
 		<View style={styles.container}>
 			<Text style={styles.title}>Login</Text>
