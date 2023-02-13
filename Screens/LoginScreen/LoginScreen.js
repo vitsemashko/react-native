@@ -6,9 +6,12 @@ import {
 	TextInput,
 	Platform,
 	KeyboardAvoidingView,
+	TouchableWithoutFeedback,
+	Keyboard,
+	ImageBackground,
 } from "react-native";
 import { styles } from "./styles";
-const LoginScreen = () => {
+const LoginScreen = ({ navigation }) => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [isSecure, setIsSecure] = useState(true);
@@ -28,58 +31,64 @@ const LoginScreen = () => {
 	};
 	const onLogin = () => {
 		Alert.alert(`Email:${email}/Password:${password}`);
+		navigation.navigate("Home");
 		setEmail("");
 		setPassword("");
 	};
-	console.log(`Email:${email}/Password:${password}`);
 	return (
-		<View style={styles.container}>
-			<Text style={styles.title}>Login</Text>
-			<TextInput
-				placeholder="Email"
-				value={email}
-				onChangeText={handleEmailChange}
-				style={onFocusEmail ? styles.inputNoFocus : styles.input}
-				onFocus={() => {
-					setOnFocusEmail(true);
-				}}
-				onBlur={() => {
-					setOnFocusEmail(false);
-				}}
-			/>
-			<KeyboardAvoidingView
-				behavior={Platform.OS === "ios" ? "padding" : "height"}
-			>
-				<View style={styles.passwordWrapper}>
+		<>
+			<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+				<View style={styles.container}>
+					<Text style={styles.title}>Login</Text>
 					<TextInput
-						placeholder="Password"
-						secureTextEntry={isSecure}
-						value={password}
-						onChangeText={handlePasswordChange}
-						style={onFocusPassword ? styles.inputNoFocus : styles.input}
+						placeholder="Email"
+						value={email}
+						onChangeText={handleEmailChange}
+						style={onFocusEmail ? styles.inputNoFocus : styles.input}
 						onFocus={() => {
-							setOnFocusPassword(true);
+							setOnFocusEmail(true);
 						}}
 						onBlur={() => {
-							setOnFocusPassword(false);
+							setOnFocusEmail(false);
 						}}
 					/>
-					<Text style={styles.show} onPress={handleShowPress}>
-						{isSecure ? "Show" : "Hide"}
-					</Text>
-				</View>
-			</KeyboardAvoidingView>
+					<KeyboardAvoidingView
+						behavior={Platform.OS === "ios" ? "padding" : "height"}
+					>
+						<View style={styles.passwordWrapper}>
+							<TextInput
+								placeholder="Password"
+								secureTextEntry={isSecure}
+								value={password}
+								onChangeText={handlePasswordChange}
+								style={onFocusPassword ? styles.inputNoFocus : styles.input}
+								onFocus={() => {
+									setOnFocusPassword(true);
+								}}
+								onBlur={() => {
+									setOnFocusPassword(false);
+								}}
+							/>
+							<Text style={styles.show} onPress={handleShowPress}>
+								{isSecure ? "Show" : "Hide"}
+							</Text>
+						</View>
+					</KeyboardAvoidingView>
 
-			<View style={styles.enter}>
-				<Text style={styles.enterText} onPress={onLogin}>
-					Enter
-				</Text>
-			</View>
-			<View style={styles.signup}>
-				<Text style={styles.signupText}>No account?</Text>
-				<Text>Sign Up</Text>
-			</View>
-		</View>
+					<View style={styles.enter}>
+						<Text style={styles.enterText} onPress={onLogin}>
+							Enter
+						</Text>
+					</View>
+					<View style={styles.signup}>
+						<Text style={styles.signupText}>No account?</Text>
+						<Text onPress={() => navigation.navigate("Registration")}>
+							Sign Up
+						</Text>
+					</View>
+				</View>
+			</TouchableWithoutFeedback>
+		</>
 	);
 };
 
