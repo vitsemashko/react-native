@@ -12,6 +12,8 @@ export const styles = StyleSheet.create({
 		justifyContent: "center",
 		borderTopRightRadius: 25,
 		borderTopLeftRadius: 25,
+		paddingLeft: 16,
+		paddingRight: 16,
 	},
 	title: {
 		fontWeight: "bold",

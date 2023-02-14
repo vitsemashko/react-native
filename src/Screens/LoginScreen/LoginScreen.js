@@ -8,7 +8,6 @@ import {
 	KeyboardAvoidingView,
 	TouchableWithoutFeedback,
 	Keyboard,
-	ImageBackground,
 } from "react-native";
 import { styles } from "./styles";
 const LoginScreen = ({ navigation }) => {

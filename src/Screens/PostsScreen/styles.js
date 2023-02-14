@@ -22,14 +22,13 @@ export const styles = StyleSheet.create({
 		width: 60,
 		height: 60,
 		backgroundColor: "#f6f6f6",
-		marginTop: 32,
+		marginTop: 5,
 		marginRight: 8,
 		borderRadius: 16,
 	},
 	placeholderImg: {
-		width: 343,
-		height: 240,
-		backgroundColor: "#f6f6f6",
+		width: 300,
+		height: 200,
 		borderRadius: 8,
 	},
 	fullname: {

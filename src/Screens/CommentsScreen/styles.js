@@ -1,0 +1,56 @@
+import { StyleSheet } from "react-native";
+export const styles = StyleSheet.create({
+	container: {
+		display: "flex",
+		alignItems: "center",
+		paddingTop: 32,
+		paddingLeft: 16,
+		paddingRight: 16,
+	},
+	placeholderImg: {
+		width: 343,
+		height: 240,
+		borderRadius: 8,
+	},
+	commentRight: {
+		paddingTop: 16,
+		paddingRight: 16,
+		paddingLeft: 30,
+		fontWeight: "400",
+		fontSize: 13,
+		lineHeight: 18,
+	},
+	noPhoto: {
+		backgroundColor: "#bdbdbd",
+		width: 28,
+		height: 28,
+		borderRadius: 50,
+		marginLeft: 16,
+	},
+	commentLeft: {
+		paddingTop: 16,
+		paddingLeft: 16,
+		paddingRight: 30,
+		fontWeight: "400",
+		fontSize: 13,
+		lineHeight: 18,
+	},
+	noPhotoSecond: {
+		backgroundColor: "#bdbdbd",
+		width: 28,
+		height: 28,
+		borderRadius: 50,
+		marginRight: 16,
+	},
+	input: {
+		marginTop: 30,
+		width: 343,
+		height: 50,
+		padding: 16,
+		backgroundColor: "#e8e8e8",
+		color: "#212121",
+		fontWeight: "500",
+		fontSize: 16,
+		borderRadius: 100,
+	},
+});
