@@ -10,8 +10,15 @@ import {
 	TouchableWithoutFeedback,
 	Keyboard,
 } from "react-native";
+
+import { useSelector, useDispatch } from "react-redux";
+import {
+	authSignUpUser,
+	updateUserProfile,
+} from "../../redux/auth/authOperations";
 import { styles } from "./styles";
 const RegistrationScreen = ({ navigation }) => {
+	const dispatch = useDispatch();
 	const [login, setLogin] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -35,10 +42,11 @@ const RegistrationScreen = ({ navigation }) => {
 		setIsSecure((prev) => !prev);
 	};
 	const onRegister = () => {
-		Alert.alert(`Login${login}/email:${email}/password:${password}`);
-		setLogin("");
-		setEmail("");
-		setPassword("");
+		dispatch(authSignUpUser(email, password, login));
+		navigation.navigate("Login");
+		// setLogin("");
+		// setEmail("");
+		// setPassword("");
 	};
 	return (
 		<>

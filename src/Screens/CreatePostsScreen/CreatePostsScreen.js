@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useSelector } from "react-redux";
 import {
 	View,
 	Text,
@@ -10,6 +11,9 @@ import {
 	Image,
 	TouchableOpacity,
 } from "react-native";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db } from "../../firebase/config";
+import { doc, setDoc } from "firebase/firestore";
 import { useIsFocused } from "@react-navigation/native";
 import { Camera } from "expo-camera";
 import * as Location from "expo-location";
@@ -17,6 +21,9 @@ import { styles } from "./styles";
 import { Ionicons } from "@expo/vector-icons";
 
 const CreatePostsScreen = ({ navigation }) => {
+	const { nickname, userId } = useSelector((state) => {
+		return state.auth;
+	});
 	const isFocused = useIsFocused();
 	const [hasPermission, setHasPermission] = useState(null);
 	const [cameraRef, setCameraRef] = useState(null);
@@ -33,16 +40,48 @@ const CreatePostsScreen = ({ navigation }) => {
 	const [name, setName] = useState("");
 	const [location, setLocation] = useState("");
 	const [loc, setLoc] = useState(null);
+	const [globalUri, setGlobalUri] = useState("");
 	const onNameChange = (text) => {
 		setName(text);
 	};
 	const onLocationChange = (text) => {
 		setLocation(text);
 	};
+	const uploadPhotoToserver = async () => {
+		const storage = getStorage();
+		const storageRef = ref(storage, name);
+		const data = await fetch(photo);
+		const file = await data.blob();
+		// 'file' comes from the Blob or File API
+		await uploadBytes(storageRef, file).then((snapshot) => {
+			console.log("Uploaded a blob or file!");
+		});
+		const processed = await getDownloadURL(storageRef);
+		await setGlobalUri(processed);
+	};
+	const uploadPostToserver = async () => {
+		await setDoc(doc(db, "posts", name), {
+			name: name,
+			photo: photo,
+			location: location,
+			loc: loc,
+			globalUri: globalUri,
+			nickname: nickname,
+			userId: userId,
+		});
+	};
 	const onPublish = async () => {
 		let loc = await Location.getCurrentPositionAsync({});
 		setLoc(loc);
-		navigation.navigate("PostsScreen", { photo, name, location, loc });
+		await uploadPhotoToserver();
+		await uploadPostToserver();
+		navigation.navigate("PostsScreen", {
+			photo,
+			name,
+			location,
+			loc,
+			globalUri,
+		});
 		setName("");
 		setLocation("");
 		setPhoto("");
@@ -68,7 +107,6 @@ const CreatePostsScreen = ({ navigation }) => {
 	if (hasPermission === false) {
 		return <Text>No access to camera</Text>;
 	}
-	// console.log(loc?.coords);
 	return (
 		<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 			<View style={styles.container}>

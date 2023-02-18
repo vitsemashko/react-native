@@ -1,12 +1,27 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-
+import { Alert } from "react-native";
 import CreatePostsScreen from "../CreatePostsScreen/CreatePostsScreen";
 import PostsScreen from "../PostsScreen/PostsScreen";
 import ProfileScreen from "../ProfileScreen/ProfileScreen";
 import { Ionicons } from "@expo/vector-icons";
+import { auth } from "../../firebase/config";
+import {
+	authSignOutUser,
+	authStateChangeUser,
+} from "../../redux/auth/authOperations";
+import { useDispatch } from "react-redux";
+import { useEffect } from "react";
 
 const Tabs = createBottomTabNavigator();
 const Home = ({ navigation }) => {
+	const dispatch = useDispatch();
+
+	const onUserSignOut = () => {
+		auth.signOut();
+		authSignOutUser();
+		navigation.navigate("Login");
+		Alert.alert("Sign out");
+	};
 	return (
 		<>
 			<Tabs.Navigator
@@ -41,7 +56,7 @@ const Home = ({ navigation }) => {
 								name="exit-outline"
 								size={24}
 								color="#bdbdbd"
-								onPress={() => navigation.navigate("Login")}
+								onPress={onUserSignOut}
 							/>
 						),
 					}}
@@ -71,7 +86,7 @@ const Home = ({ navigation }) => {
 								name="exit-outline"
 								size={24}
 								color="#bdbdbd"
-								onPress={() => navigation.navigate("Login")}
+								onPress={onUserSignOut}
 							/>
 						),
 					}}

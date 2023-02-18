@@ -4,6 +4,7 @@ import LoginScreen from "../../Screens/LoginScreen/LoginScreen";
 import Home from "../../Screens/Home/Home";
 import CommentsScreen from "../../Screens/CommentsScreen/CommentsScreen";
 import MapScreen from "../../Screens/MapScreen/MapScreen";
+import ProfileScreen from "../../Screens/ProfileScreen/ProfileScreen";
 
 const MainStack = createStackNavigator();
 const UserNav = () => {
@@ -14,6 +15,7 @@ const UserNav = () => {
 			<MainStack.Screen name="Home" component={Home} />
 			<MainStack.Screen name="Comments" component={CommentsScreen} />
 			<MainStack.Screen name="MapScreen" component={MapScreen} />
+			<MainStack.Screen name="Profile" component={ProfileScreen} />
 		</MainStack.Navigator>
 	);
 };

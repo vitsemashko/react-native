@@ -9,8 +9,19 @@ import {
 	TouchableWithoutFeedback,
 	Keyboard,
 } from "react-native";
+import { useSelector, useDispatch } from "react-redux";
+import {
+	authSignInUser,
+	authStateChangeUser,
+} from "../../redux/auth/authOperations";
+import { auth } from "../../firebase/config";
 import { styles } from "./styles";
+
 const LoginScreen = ({ navigation }) => {
+	const { stateChanged } = useSelector((state) => {
+		return state.auth;
+	});
+	const dispatch = useDispatch();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [isSecure, setIsSecure] = useState(true);
@@ -29,10 +40,13 @@ const LoginScreen = ({ navigation }) => {
 		setIsSecure((prev) => !prev);
 	};
 	const onLogin = () => {
-		Alert.alert(`Email:${email}/Password:${password}`);
-		navigation.navigate("Home");
-		setEmail("");
-		setPassword("");
+		dispatch(authSignInUser(email, password));
+		dispatch(authStateChangeUser());
+		if (stateChanged) {
+			navigation.navigate("Home");
+		} else {
+			// navigation.navigate("Registration");
+		}
 	};
 	return (
 		<>

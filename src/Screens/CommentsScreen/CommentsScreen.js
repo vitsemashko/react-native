@@ -7,13 +7,42 @@ import {
 	Keyboard,
 	KeyboardAvoidingView,
 } from "react-native";
+import { useState, useEffect } from "react";
+import { db } from "../../firebase/config";
+import { doc, setDoc, onSnapshot } from "firebase/firestore";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "./styles";
+import { useSelector } from "react-redux";
 const CommentsScreen = ({ route }) => {
-	const props = route.params;
+	const { postUri, postName } = route.params;
+	const { nickname, userId } = useSelector((state) => {
+		return state.auth;
+	});
+	const [comment, setComment] = useState("");
+	const [serverComment, setServerComment] = useState("");
+	useEffect(() => {
+		getCommentFromServer();
+	}, []);
+
+	const uploadCommentToServer = async () => {
+		await setDoc(doc(db, "comment", postName), {
+			text: comment,
+			nickname: nickname,
+			userId: userId,
+		});
+		setComment("");
+	};
+	const getCommentFromServer = async () => {
+		onSnapshot(doc(db, "comment", postName), (doc) => {
+			setServerComment(doc.data());
+		});
+	};
 	return (
 		<View style={styles.container}>
-			{props && <Image source={{ uri: props }} style={styles.placeholderImg} />}
+			{postUri && (
+				<Image source={{ uri: postUri }} style={styles.placeholderImg} />
+			)}
+			<Text>{postName}</Text>
 			<View style={{ display: "flex", alignItems: "center" }}>
 				<View
 					style={{
@@ -24,59 +53,20 @@ const CommentsScreen = ({ route }) => {
 					}}
 				>
 					<View style={styles.noPhoto}></View>
-					<Text style={styles.commentRight}>
-						Really love your most recent photo. I’ve been trying to capture the
-						same thing for a few months and would love some tips!
-					</Text>
+					<Text style={styles.commentRight}>{serverComment?.text}</Text>
 				</View>
-				<View
-					style={{
-						display: "flex",
-						flexDirection: "row",
-						alignItems: "center",
-						justifyContent: "space-between",
-					}}
-				>
-					<Text style={styles.commentLeft}>
-						Really love your most recent photo. I’ve been trying to capture the
-						same thing for a few months and would love some tips!
-					</Text>
-					<View style={styles.noPhotoSecond}></View>
-				</View>
-				<View
-					style={{
-						display: "flex",
-						flexDirection: "row",
-						alignItems: "center",
-						justifyContent: "space-between",
-					}}
-				>
-					<View style={styles.noPhoto}></View>
-					<Text style={styles.commentRight}>
-						Really love your most recent photo. I’ve been trying to capture the
-						same thing for a few months and would love some tips!
-					</Text>
-				</View>
-				<View
-					style={{
-						display: "flex",
-						flexDirection: "row",
-						alignItems: "center",
-						justifyContent: "space-between",
-					}}
-				>
-					<Text style={styles.commentLeft}>
-						Really love your most recent photo. I’ve been trying to capture the
-						same thing for a few months and would love some tips!
-					</Text>
-					<View style={styles.noPhotoSecond}></View>
-				</View>
+
 				<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 					<KeyboardAvoidingView
 						behavior={Platform.OS === "ios" ? "padding" : "height"}
 					>
 						<View>
-							<TextInput placeholder="Leave a comment" style={styles.input} />
+							<TextInput
+								placeholder="Leave a comment"
+								style={styles.input}
+								value={comment}
+								onChangeText={(text) => setComment(text)}
+							/>
 							<Ionicons
 								name="arrow-up-circle"
 								size={34}
@@ -87,6 +77,7 @@ const CommentsScreen = ({ route }) => {
 									right: 0,
 									marginRight: 8,
 								}}
+								onPress={uploadCommentToServer}
 							/>
 						</View>
 					</KeyboardAvoidingView>
