@@ -6,6 +6,7 @@ import {
 	TextInput,
 	TouchableWithoutFeedback,
 	Keyboard,
+	ActivityIndicator,
 	KeyboardAvoidingView,
 	Alert,
 	Image,
@@ -19,6 +20,7 @@ import { Camera } from "expo-camera";
 import * as Location from "expo-location";
 import { styles } from "./styles";
 import { Ionicons } from "@expo/vector-icons";
+import { TouchableHighlight } from "react-native-gesture-handler";
 
 const CreatePostsScreen = ({ navigation }) => {
 	const { nickname, userId } = useSelector((state) => {
@@ -29,63 +31,45 @@ const CreatePostsScreen = ({ navigation }) => {
 	const [cameraRef, setCameraRef] = useState(null);
 	const [type, setType] = useState(Camera.Constants.Type.back);
 
-	// onPress={() => {
-	// 	setType(
-	// 	  type === Camera.Constants.Type.back
-	// 		? Camera.Constants.Type.front
-	// 		: Camera.Constants.Type.back
-	// 	);
-
 	const [photo, setPhoto] = useState("");
 	const [name, setName] = useState("");
 	const [location, setLocation] = useState("");
 	const [loc, setLoc] = useState(null);
 	const [globalUri, setGlobalUri] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState(null);
 	const onNameChange = (text) => {
 		setName(text);
 	};
 	const onLocationChange = (text) => {
 		setLocation(text);
 	};
-	const uploadPhotoToserver = async () => {
+	async function onPublish() {
+		const locat = await Location.getCurrentPositionAsync({});
 		const storage = getStorage();
 		const storageRef = ref(storage, name);
 		const data = await fetch(photo);
 		const file = await data.blob();
-		// 'file' comes from the Blob or File API
 		await uploadBytes(storageRef, file).then((snapshot) => {
 			console.log("Uploaded a blob or file!");
 		});
 		const processed = await getDownloadURL(storageRef);
-		await setGlobalUri(processed);
-	};
-	const uploadPostToserver = async () => {
 		await setDoc(doc(db, "posts", name), {
 			name: name,
 			photo: photo,
 			location: location,
-			loc: loc,
-			globalUri: globalUri,
+			loc: locat,
+			globalUri: processed,
 			nickname: nickname,
 			userId: userId,
 		});
-	};
-	const onPublish = async () => {
-		let loc = await Location.getCurrentPositionAsync({});
-		setLoc(loc);
-		await uploadPhotoToserver();
-		await uploadPostToserver();
-		navigation.navigate("PostsScreen", {
-			photo,
-			name,
-			location,
-			loc,
-			globalUri,
-		});
+		Alert.alert("Post created");
 		setName("");
 		setLocation("");
 		setPhoto("");
-	};
+		setLoc(null);
+		setGlobalUri("");
+	}
 	useEffect(() => {
 		(async () => {
 			let { status } = await Location.requestForegroundPermissionsAsync();
@@ -110,6 +94,8 @@ const CreatePostsScreen = ({ navigation }) => {
 	return (
 		<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 			<View style={styles.container}>
+				{isLoading && <ActivityIndicator size="small" color="#ff6c00" />}
+				{error && <Text>An error occurred...</Text>}
 				{isFocused && (
 					<Camera
 						style={{ width: 300, height: 200 }}
@@ -133,27 +119,30 @@ const CreatePostsScreen = ({ navigation }) => {
 					</Camera>
 				)}
 				<View style={styles.wrapper}>
-					<Text
-						style={{
-							color: "#bdbdbd",
-							marginBottom: 16,
-							fontSize: 16,
-							fontWeight: "500",
-						}}
-					>
-						{photo && (
-							<Image
-								source={{ uri: photo }}
-								style={{
-									width: 20,
-									height: 20,
-									position: "absolute",
-									top: 0,
-								}}
-							/>
-						)}
-						Upload photo
-					</Text>
+					<TouchableHighlight>
+						<Text
+							style={{
+								color: "#bdbdbd",
+								marginBottom: 16,
+								fontSize: 16,
+								fontWeight: "500",
+							}}
+						>
+							{photo && (
+								<Image
+									source={{ uri: photo }}
+									style={{
+										width: 20,
+										height: 20,
+										position: "absolute",
+										top: 0,
+									}}
+								/>
+							)}
+							Upload photo
+						</Text>
+					</TouchableHighlight>
+
 					<TextInput
 						style={styles.wrapperText}
 						placeholder="Name"
@@ -176,9 +165,11 @@ const CreatePostsScreen = ({ navigation }) => {
 					</View>
 				</View>
 				<View style={styles.button}>
-					<Text style={{ color: "#fff" }} onPress={onPublish}>
-						Publish
-					</Text>
+					<TouchableHighlight>
+						<Text style={{ color: "#fff" }} onPress={onPublish}>
+							Publish
+						</Text>
+					</TouchableHighlight>
 				</View>
 			</View>
 		</TouchableWithoutFeedback>

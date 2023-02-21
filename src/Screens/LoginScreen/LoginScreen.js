@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
 	Alert,
+	ActivityIndicator,
 	Text,
 	View,
 	TextInput,
@@ -16,6 +17,7 @@ import {
 } from "../../redux/auth/authOperations";
 import { auth } from "../../firebase/config";
 import { styles } from "./styles";
+import { TouchableHighlight } from "react-native-gesture-handler";
 
 const LoginScreen = ({ navigation }) => {
 	const { stateChanged } = useSelector((state) => {
@@ -27,6 +29,8 @@ const LoginScreen = ({ navigation }) => {
 	const [isSecure, setIsSecure] = useState(true);
 	const [onFocusEmail, setOnFocusEmail] = useState(false);
 	const [onFocusPassword, setOnFocusPassword] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState(null);
 	const handleEmailChange = (text) => {
 		setEmail(text);
 	};
@@ -40,18 +44,27 @@ const LoginScreen = ({ navigation }) => {
 		setIsSecure((prev) => !prev);
 	};
 	const onLogin = () => {
-		dispatch(authSignInUser(email, password));
-		dispatch(authStateChangeUser());
-		if (stateChanged) {
-			navigation.navigate("Home");
-		} else {
-			// navigation.navigate("Registration");
+		try {
+			setIsLoading(true);
+			dispatch(authSignInUser(email, password));
+			dispatch(authStateChangeUser());
+			if (stateChanged) {
+				navigation.navigate("Home");
+			} else {
+				// navigation.navigate("Registration");
+			}
+		} catch (error) {
+			setError(error.message);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 	return (
 		<>
 			<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 				<View style={styles.container}>
+					{isLoading && <ActivityIndicator size="small" color="#ff6c00" />}
+					{error && <Text>An error occurred...</Text>}
 					<Text style={styles.title}>Login</Text>
 					<TextInput
 						placeholder="Email"
@@ -87,17 +100,20 @@ const LoginScreen = ({ navigation }) => {
 							</Text>
 						</View>
 					</KeyboardAvoidingView>
-
 					<View style={styles.enter}>
-						<Text style={styles.enterText} onPress={onLogin}>
-							Enter
-						</Text>
+						<TouchableHighlight>
+							<Text style={styles.enterText} onPress={onLogin}>
+								Enter
+							</Text>
+						</TouchableHighlight>
 					</View>
 					<View style={styles.signup}>
 						<Text style={styles.signupText}>No account?</Text>
-						<Text onPress={() => navigation.navigate("Registration")}>
-							Sign Up
-						</Text>
+						<TouchableHighlight>
+							<Text onPress={() => navigation.navigate("Registration")}>
+								Sign Up
+							</Text>
+						</TouchableHighlight>
 					</View>
 				</View>
 			</TouchableWithoutFeedback>

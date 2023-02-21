@@ -1,67 +1,105 @@
 import { useState, useEffect } from "react";
-import { doc, onSnapshot, collection, getDocs } from "firebase/firestore";
+import {
+	doc,
+	onSnapshot,
+	collection,
+	getDocs,
+	updateDoc,
+	increment,
+} from "firebase/firestore";
 import { db } from "../../firebase/config";
-import { View, Text, Image, FlatList } from "react-native";
+import { View, Text, Image, FlatList, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "./styles";
 import { useSelector } from "react-redux";
+import { TouchableHighlight } from "react-native-gesture-handler";
 
 const PostsScreen = ({ route, navigation }) => {
 	const { nickname } = useSelector((state) => {
 		return state.auth;
 	});
 	const props = route.params;
-	const [post, setPost] = useState({});
 	const [posts, setPosts] = useState([]);
 	const [uri, setUri] = useState("");
-	const [serverLoc, setServerLoc] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState(null);
+	const [likes, setLikes] = useState(0);
+	const [serverComments, setServerComments] = useState("");
+	const [serverLikes, setServerLikes] = useState("");
 	useEffect(() => {
 		getAllPosts();
+		getAllCommentsFromServer();
+		// getAllLikesfromServer();
 	}, []);
-	const getOnePost = () => {
-		onSnapshot(doc(db, "posts", "Asd"), (doc) => {
-			setPost(doc.data());
-		});
+	useEffect(() => {
+		getAllLikesfromServer();
+	}, [likes]);
+	const getAllLikesfromServer = async () => {
+		try {
+			const querySnapshot = await getDocs(collection(db, "posts"));
+			// let arr = [];
+			querySnapshot.forEach((doc) => {
+				// doc.data() is never undefined for query doc snapshots
+				// arr.push(doc.data());
+				setServerLikes(doc.data().likes);
+			});
+		} catch (error) {
+			setError(error.message);
+		} finally {
+			setIsLoading(false);
+		}
 	};
 	const getAllPosts = async () => {
-		const querySnapshot = await getDocs(collection(db, "posts"));
-		let arr = [];
-		querySnapshot.forEach((doc) => {
-			// doc.data() is never undefined for query doc snapshots
-			arr.push(doc.data());
-			return arr;
-		});
-		setPosts(arr);
+		try {
+			setIsLoading(true);
+			const querySnapshot = await getDocs(collection(db, "posts"));
+			let arr = [];
+			querySnapshot.forEach((doc) => {
+				// doc.data() is never undefined for query doc snapshots
+				arr.push(doc.data());
+				setPosts(arr);
+			});
+		} catch (error) {
+			setError(error.message);
+		} finally {
+			setIsLoading(false);
+		}
 	};
-	const onFilterPosts = (name) => {
-		const filtered = posts.filter((item) => {
-			return item.name === name;
-		});
-		const uri = filtered.map((item) => item.globalUri);
-		setUri(uri[0]);
+	const getAllCommentsFromServer = async () => {
+		try {
+			setIsLoading(true);
+			const querySnapshot = await getDocs(collection(db, "posts"));
+			// let arr = [];
+			querySnapshot.forEach((doc) => {
+				// doc.data() is never undefined for query doc snapshots
+				// arr.push(doc.data());
+				setServerComments(doc.data().comments);
+			});
+		} catch (error) {
+			setError(error.message);
+		} finally {
+			setIsLoading(false);
+		}
 	};
-	const onFilterByLoc = (name) => {
-		const filtered = posts.filter((item) => {
-			return item.name === name;
+	const onLikesPress = (data) => {
+		setLikes((prev) => {
+			return prev + 1;
 		});
-		const loc = filtered.map((item) => item?.loc?.coords);
-		setServerLoc(loc[0]);
-	};
-	const goToComments = (data) => {
-		onFilterPosts(data);
-
-		navigation.navigate("Comments", {
-			postUri: uri,
-			postName: data,
+		const likesRef = doc(db, "posts", data);
+		updateDoc(likesRef, {
+			likes: increment(1),
 		});
 	};
-	const goToMap = (data) => {
-		onFilterByLoc(data);
-
-		navigation.navigate("MapScreen", serverLoc);
+	const goToComments = (name) => {
+		navigation.navigate("Comments", name);
+	};
+	const goToMap = (name) => {
+		navigation.navigate("MapScreen", name);
 	};
 	return (
 		<View style={styles.container}>
+			{isLoading && <ActivityIndicator size="small" color="#ff6c00" />}
+			{error && <Text>{error}</Text>}
 			<View style={styles.wrapper}>
 				<View style={styles.placeholder}></View>
 				<View style={{ marginTop: 5, marginBottom: 32 }}>
@@ -91,30 +129,51 @@ const PostsScreen = ({ route, navigation }) => {
 								flexDirection: "row",
 							}}
 						>
-							<Text style={{ color: "#bdbdbd", marginRight: 24 }}>
-								<Ionicons
-									name="chatbubble"
-									size={24}
-									color="#bdbdbd"
-									onPress={() => goToComments(item.name)}
-								/>{" "}
-								0
-							</Text>
-							<Text style={{ color: "#bdbdbd" }}>
-								<Ionicons name="thumbs-up-sharp" size={24} color="#bdbdbd" /> 0
-							</Text>
-							{item && (
+							<TouchableHighlight>
 								<Text
-									style={{ marginLeft: 67, textDecorationLine: "underline" }}
+									style={{
+										color: Boolean(serverComments) ? "#ff6c00" : "#bdbdbd",
+										marginRight: 24,
+									}}
 								>
 									<Ionicons
-										name="md-location-outline"
+										name="chatbubble"
 										size={24}
-										color="#bdbdbd"
-										onPress={() => goToMap(item.name)}
-									/>
-									{item.location}
+										color={Boolean(serverComments) ? "#ff6c00" : "#bdbdbd"}
+										onPress={() => goToComments(item.name)}
+									/>{" "}
+									{serverComments?.length}
 								</Text>
+							</TouchableHighlight>
+							<TouchableHighlight>
+								<Text
+									style={{
+										color: Boolean(serverLikes) ? "#ff6c00" : "#bdbdbd",
+									}}
+								>
+									<Ionicons
+										name="thumbs-up-sharp"
+										size={24}
+										color={Boolean(serverLikes) ? "#ff6c00" : "#bdbdbd"}
+										onPress={() => onLikesPress(item.name)}
+									/>{" "}
+									{serverLikes}
+								</Text>
+							</TouchableHighlight>
+							{item && (
+								<TouchableHighlight>
+									<Text
+										style={{ marginLeft: 67, textDecorationLine: "underline" }}
+									>
+										<Ionicons
+											name="md-location-outline"
+											size={24}
+											color="#bdbdbd"
+											onPress={() => goToMap(item.name)}
+										/>
+										{item.location}
+									</Text>
+								</TouchableHighlight>
 							)}
 						</View>
 					</View>

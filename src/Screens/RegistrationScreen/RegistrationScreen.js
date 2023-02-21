@@ -9,7 +9,9 @@ import {
 	KeyboardAvoidingView,
 	TouchableWithoutFeedback,
 	Keyboard,
+	ActivityIndicator,
 } from "react-native";
+import { TouchableHighlight } from "react-native-gesture-handler";
 
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -26,6 +28,8 @@ const RegistrationScreen = ({ navigation }) => {
 	const [onFocusLogin, setOnFocusLogin] = useState(false);
 	const [onFocusEmail, setOnFocusEmail] = useState(false);
 	const [onFocusPassword, setOnFocusPassword] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState(null);
 	const handleLoginChange = (text) => {
 		setLogin(text);
 	};
@@ -42,8 +46,16 @@ const RegistrationScreen = ({ navigation }) => {
 		setIsSecure((prev) => !prev);
 	};
 	const onRegister = () => {
-		dispatch(authSignUpUser(email, password, login));
-		navigation.navigate("Login");
+		try {
+			setIsLoading(true);
+			dispatch(authSignUpUser(email, password, login));
+			navigation.navigate("Login");
+		} catch (error) {
+			setError(error.message);
+		} finally {
+			setIsLoading(false);
+		}
+
 		// setLogin("");
 		// setEmail("");
 		// setPassword("");
@@ -52,6 +64,8 @@ const RegistrationScreen = ({ navigation }) => {
 		<>
 			<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 				<View style={styles.container}>
+					{isLoading && <ActivityIndicator size="small" color="#ff6c00" />}
+					{error && <Text>An error occurred...</Text>}
 					<View style={styles.placeholder}>
 						<View style={styles.cross}>
 							<Text style={styles.inCross}>+</Text>
@@ -105,13 +119,17 @@ const RegistrationScreen = ({ navigation }) => {
 						</View>
 					</KeyboardAvoidingView>
 					<View style={styles.register}>
-						<Text style={styles.registerText} onPress={onRegister}>
-							Register
-						</Text>
+						<TouchableHighlight>
+							<Text style={styles.registerText} onPress={onRegister}>
+								Register
+							</Text>
+						</TouchableHighlight>
 					</View>
 					<View style={styles.enter}>
 						<Text style={styles.enterText}>Already have an account?</Text>
-						<Text onPress={() => navigation.navigate("Login")}>Enter</Text>
+						<TouchableHighlight>
+							<Text onPress={() => navigation.navigate("Login")}>Enter</Text>
+						</TouchableHighlight>
 					</View>
 				</View>
 			</TouchableWithoutFeedback>
